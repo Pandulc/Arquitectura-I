@@ -1,0 +1,66 @@
+10000001
+01000010
+00100100
+00011000
+00100100
+01000010
+
+////////////////////
+
+00000081
+00000042
+00000024
+00000018
+00000024
+00000042
+
+///////////////////
+
+	SUB R0,R15,R15
+
+inicio:ADD R1,R0,#6 //asigno a r1 la cantidad de palabras
+	 ADD R2,R0,#0  //contador de palabras
+
+loop:	 LDR R3,[R2]	  //asigno a r3 el valor de la direccion en r2
+	 STR R3,[R0,#0x800]  //guardo el valor de r3 en el puerto
+	 ADD R4,R0,#5	  //inicia el delay
+	
+delay: SUBS R4,R4,#1 	  //resto 1 al delay
+	 BNE 0x18		  //sigue hasta que sea 0
+	 SUBS R1,R1,#1	  //resto 1 a la cantidad de palabras que faltan
+	 ADD R2,R2,#4       //sumo una palabra
+	 BNE 0xC		  //vuelve al loop hasta que llegue a 0
+	 B 0x0		  //fin
+
+///////////////////
+
+SUB R0,R15,R15
+ADD R1,R0,#6
+ADD R2,R0,#0
+LDR R3,[R2]
+STR R3,[R0,#0x800]
+ADD R4,R0,#5
+SUBS R4,R4,#1
+BNE Ox18
+SUBS R1,R1,#1
+ADD R2,R2,#4
+BNE 0xC
+B 0x4
+
+///////////////////
+
+E04F000F
+E2801006
+E2802000
+E5923000
+E5803800
+E2804005
+E2544001
+1AFFFFFD
+E2511001
+E2822004
+1AFFFFF7
+EAFFFFF4
+
+
+
