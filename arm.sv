@@ -3,7 +3,7 @@
 // Single-cycle implementation of a subset of ARMv4 with i/O port capability
 // 
 
-module top(input  logic       clk, reset,
+module top(input  logic       clk, resetE,
            input  logic [7:0] INport,
            output logic [7:0] OUTport);
 
@@ -12,6 +12,8 @@ module top(input  logic       clk, reset,
   logic [31:0] PC, Instr, ReadData, MemData;
   logic [7:0] INData;
   
+  logic reset;
+  assign reset = ~resetE;
   // instantiate processor and memories
   arm arm(clk, reset, PC, Instr, MemWrite, MemtoReg, DataAdr, 
           WriteData, ReadData);
@@ -31,7 +33,7 @@ module dmem(input  logic        clk, we,
   logic [31:0] RAM[63:0];
   
   initial
-      $readmemh("C:\\Users\\usuario\\Desktop\\Gabi\\Facultad\\2do anio\\2do Semestre\\Arquitectura de Computadoras I\\Proyecto\\dmem.dat",RAM);
+      $readmemh("C:\\Users\\usuario\\Desktop\\Gabi\\Facultad\\2do anio\\2do Semestre\\Arquitectura de Computadoras I\\Arquitectura-I\\dmem.dat",RAM);
 
   assign rd = RAM[a[31:2]]; // word aligned
 
@@ -42,10 +44,10 @@ endmodule
 module imem(input  logic [31:0] a,
             output logic [31:0] rd);
 
-  logic [31:0] RAM[63:0];
+  logic [31:0] RAM[255:0];
 
   initial
-      $readmemh("C:\\Users\\usuario\\Desktop\\Gabi\\Facultad\\2do anio\\2do Semestre\\Arquitectura de Computadoras I\\Proyecto\\imem.dat",RAM);
+      $readmemh("C:\\Users\\usuario\\Desktop\\Gabi\\Facultad\\2do anio\\2do Semestre\\Arquitectura de Computadoras I\\Arquitectura-I\\imem.dat",RAM);
 
   assign rd = RAM[a[31:2]]; // word aligned
 endmodule
