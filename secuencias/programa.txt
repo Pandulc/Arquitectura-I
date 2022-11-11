@@ -1,0 +1,510 @@
+/----------------------------------------------------------------------------/
+/---------------------------------- Menu ------------------------------------/
+/----------------------------------------------------------------------------/
+
+            SUB     R0, R15, R15        ; E04F000F ; Utilizamos el PC para mover un 0 a R0
+inicio:     ADD     R2, R0, #0x80       ; E2802080 ; Movemos a R2 el valor #0x80, sera nuestra luz del menu
+            STR     R2, [R0, #0x800]    ; E5802800 ; Sacamos al puerto 0x800, correspondiente a la placa, el registro R2
+
+vuelta:     ADD     R3, R0, #2          ; E2803002 ; Movemos un 2 al registro R3, contador para el bucle de lectura
+
+lectura:    SUBS    R3, R3, #1          ; E2533001 ; Restamos uno al contador y actualizamos banderas
+            LDR     R1, [R0, #0x800]    ; E5901800 ; Leemos el puerto, guardando en R1 los valores de los switches y del key_1
+            BNE     lectura             ; 1AFFFFFC ;
+
+            ANDS    R2, R1, #0x0F       ; E211200F ; Primer mascara, verificamos la presencia de switches encendidos
+            BEQ     vuelta              ; 0AFFFFF9 ;
+
+            ANDSNE  R2, R1, #0x01       ; 12112001 ; Segunda mascara, verificamos pin M1 encendido
+            STRNE   R0, [R0, #0x800]    ; 15800800 ; Apagamos luces del menu
+            BNE     sel1                ; 1A000009 ;
+
+            ANDSEQ  R2, R1, #0x02       ; 02112002 ; Tercer mascara, verificamos pin T8 encendido
+            STRNE   R0, [R0, #0x800]    ; 15800800 ; Apagamos luces del menu
+            BNE     sel2                ; 1A000011 ;
+
+            ANDSEQ  R2, R1, #0x04       ; 02112004 ; Cuarta mascara, verificamos pin B9 encendido
+            STRNE   R0, [R0, #0x800]    ; 15800800 ; Apagamos luces del menu
+            BNE     sel3                ; 1A000019 ;
+
+            ANDSEQ  R2, R1, #0x08       ; 02112008 ; Quinta mascara, verificamos pin M15 encendido
+            STRNE   R0, [R0, #0x800]    ; 15800800 ; Apagamos luces del menu
+            BNE     sel4                ; 1A000021 ;
+            B       inicio              ; EAFFFFEA ; Si ninguna condicion se cumplio, volvemos al inicio
+
+/----------------------------------------------------------------------------/
+/------------------------------- Seleccion 1 --------------------------------/
+/----------------------------------------------------------------------------/
+
+sel1:       AND     R2, R1, #0x01       ; E2012001 ; Movemos un 1 a R2
+            STR     R2, [R0, #0x800]    ; E5802800 ; Sacamos al puerto la luz 1, correspondiente a la opcion elegida
+
+vuelta:     ADD     R3, R0, #2          ; E2803002 ; Movemos un 2 al registro R3, contador para el bucle de lectura
+
+lectura:    SUBS    R3, R3, #1          ; E2533001 ; Restamos uno al contador y actualizamos banderas
+            LDR     R1, [R0, #0x800]    ; E5901800 ; Leemos el puerto, guardando en R1 los valores de los switches y del key_1
+            BNE     lectura             ; 1AFFFFFC ;
+
+            ANDS    R2,R1, #0x10        ; E2112010 ; Primer mascara, verificamos pin E1 apagado (boton presionado)
+            BEQ     sec1                ; 0A000023 ;
+            ANDSNE  R2, R1, #0x01       ; 12112001 ; Segunda mascara, verificamos pin M1 apagado
+            BEQ     inicio              ; 0AFFFFE0 ;
+            BNE     vuelta              ; 1AFFFFF6 ; Si el pin M1 sigue encendido, esperamos a E1 apagado o M1 apagado
+
+/----------------------------------------------------------------------------/
+/------------------------------- Seleccion 2 --------------------------------/
+/----------------------------------------------------------------------------/
+
+sel2:       AND     R2, R1, #0x02      ; E2012002 ; Movemos un 2 a R2
+            STR     R2, [R0, #0x800]   ; E5802800 ; Sacamos al puerto la luz 2, correspondiente a la opcion elegida
+
+vuelta:     ADD     R3, R0, #2         ; E2803002 ; Movemos un 2 al registro R3, contador para el bucle de lectura
+
+lectura:    SUBS    R3, R3, #1         ; E2533001 ; Restamos uno al contador y actualizamos banderas
+            LDR     R1, [R0, #0x800]   ; E5901800 ; Leemos el puerto, guardando en R1 los valores de los switches y del key_1
+            BNE     lectura            ; 1AFFFFFC ;
+
+            ANDS    R2, R1, #0x10      ; E2112010 ; Primer mascara, verificamos pin E1 apagado (boton presionado)
+            BEQ     sec2               ; 0A00002B ;
+            ANDSNE  R2, R1, #0x02      ; 12112002 ; Segunda mascara, verificamos pin T8 apagado
+            BEQ     inicio             ; 0AFFFFD5 ;
+            BNE     vuelta             ; 1AFFFFF6 ; Si el pin M1 sigue encendido, esperamos a E1 apagado o M1 apagado
+
+/----------------------------------------------------------------------------/
+/------------------------------- Seleccion 3 --------------------------------/
+/----------------------------------------------------------------------------/
+
+sel3:       AND     R2, R1, #0x04      ; E2012004 ; Movemos un 4 a R2
+            STR     R2, [R0, #0x800]   ; E5802800 ; Sacamos al puerto la luz 3, correspondiente a la opcion elegida
+
+vuelta:     ADD     R3, R0, #2         ; E2803002 ; Movemos un 2 al registro R3, contador para el bucle de lectura
+
+lectura:    SUBS    R3, R3, #1         ; E2533001 ; Restamos uno al contador y actualizamos banderas
+            LDR     R1, [R0, #0x800]   ; E5901800 ; Leemos el puerto, guardando en R1 los valores de los switches y del key_1
+            BNE     lectura            ; 1AFFFFFC ;
+
+            ANDS    R2, R1, #0x10      ; E2112010 ; Primer mascara, verificamos pin E1 apagado (boton presionado)
+            BEQ     sec3               ; 0A000048 ;
+
+            ANDSNE  R2, R1, #0x04      ; 12112004 ; Segunda mascara, verificamos pin B9 apagado
+            BEQ     inicio             ; 0AFFFFCA ;
+            BNE     vuelta             ; 1AFFFFF6 ; Si el pin M1 sigue encendido, esperamos a E1 apagado o M1 apagado
+
+/----------------------------------------------------------------------------/
+/------------------------------- Seleccion 4 --------------------------------/
+/----------------------------------------------------------------------------/
+
+sel4:       AND     R2, R1, #0x08      ; E2012008 ; Movemos un 8 a R2
+            STR     R2, [R0, #0x800]   ; E5802800 ; Sacamos al puerto la luz 4, correspondiente a la opcion elegida
+
+vuelta:     ADD     R3, R0, #2         ; E2803002 ; Movemos un 2 al registro R3, contador para el bucle de lectura
+
+lectura:    SUBS    R3, R3, #1         ; E2533001 ; Restamos uno al contador y actualizamos banderas
+            LDR     R1, [R0, #0x800]   ; E5901800 ; Leemos el puerto, guardando en R1 los valores de los switches y del key_1
+            BNE     lectura            ; 1AFFFFFC ;
+
+            ANDS    R2, R1, #0x10      ; E2112010 ; Primer mascara, verificamos pin E1 apagado (boton presionado)
+            BEQ     sec4               ; 0A00004F ;
+
+            ANDSNE  R2, R1, #0x08      ; 12112008 ; Segunda mascara, verificamos pin M15 apagado
+            BEQ     inicio             ; 0AFFFFBF ;
+            BNE     vuelta             ; 1AFFFFF6 ; Si el pin M1 sigue encendido, esperamos a E1 apagado o M1 apagado
+
+/----------------------------------------------------------------------------/
+/------------------------------- Secuencia 1 --------------------------------/
+/----------------------------------------------------------------------------/
+
+sec1:       LDR r5, [r0, #4]           ; E5905004 ; Cargamos el valor de tabla del delay
+            ADD r7, r0, #12            ; E2807008 ; Guardamos el valor de la primer palabra de la secuencia
+            ADD r8,r0,#8               ; E2808008 ; Contador de palabras de la tabla
+
+loop1:      LDR r9, [r7]               ; E5979000 ; Lee el dato guardado en R7 (led a prender)
+            STR r9, [r0, #0x800]       ; E5809800 ; Saca la luz al puerto
+            ADD r6,r0,r5               ; E0806005 ; Guardamos en r6 el valor del delay en r5
+
+delay:      SUBS r6, r6, #1            ; E2566001 ; Restamos hasta llegar a cero
+            BNE #0x120                 ; 1AFFFFFD ;
+
+            ADD r7, r7, #4             ; E2877004 ; Aumentamos en 4 para pasar a la proxima palabra de tabla
+            SUBS r8,r8,#1              ; E2588001 ; Restamos 1 al contador de instrucciones
+            ADDEQ r7,r0,#12            ; 02807008 ; Si llega a cero, suma la cantidad de lineas de la tabla
+            ADDEQ r8,r8,#8             ; 02888008 ; Y vuelve a la primer palabra de la secuencia
+            ADD R3,R0,#0x2             ; E2803002 ; Contador de doble lectura
+
+lectura:    SUBS R3,R3,#1              ; E2533001 ; Lectura del puerto
+            LDR R1,[R0,#0x800]         ; E5901800 ;
+            BNE lectura                ; 1AFFFFFC ;
+
+            ANDS R1,R1,#0x01           ; E2111001 ; Mascara: verifica que se haya apagado el pin_M1
+            BEQ inicio                 ; 0AFFFFAC ;
+            BNE loop1                  ; 1AFFFFEF ; Si no se apaga el PIN_M1 vuelve a la secuencia
+
+/----------------------------------------------------------------------------/
+/------------------------------- Secuencia 2 --------------------------------/
+/----------------------------------------------------------------------------/
+
+sec2:       ADD     R4, R0, #7          ; E2804007 ; Movemos un 7 al registro R4, contador del loop1
+            ADD     R8, R0, #0          ; E2808000 ; Movemos un 0 al registro R8, contador de luces encendidas
+            ADD     R6, R0, #0x80       ; E2806080 ; Movemos el valor 0x80 al registro R6, este sera nuestro registro de luces
+
+loop1:      STR     R6, [R0, #0x800]    ; E5806800 ; Sacamos la luz de la secuencia al puerto
+            ADD     R5, R0, #6          ; E2805006 ; Movemos un 6 al registro R5, contador de la division
+            ADD     R7, R0, #1          ; E2807001 ; Movemos un 1 al registro R7, acumulador para division
+            SUBS    R5, R5, R8          ; E0555008 ; Corregimos R5 segun la cantidad de luces que hayamos encendido y actualiza banderas
+            BEQ     salto               ; 0A000002 ; En caso de ser 0, debemos evitar el loop division
+
+division:   SUBS    R5, R5, #1          ; E2555001 ; Restamos uno al contador y actualizamos banderas
+            ADD     R7, R7, R7          ; E0877007 ; Acumulamos R7
+            BNE     division            ; 1AFFFFFC ;
+
+salto:      ADD     R8, R8, #1          ; E2888001 ; Sumamos 1 al registro R8, correspondiente a la luz que sacamos
+            SUB     R6, R6, R7          ; E0466007 ; Division por 2 de R6
+            LDR     R9, [R0, #0x4]      ; E5909004 ; Lectura del delay desde tabla, guardamos en el registro R9
+
+delay       SUBS    R9, R9, #1          ; E2599001 ; Restamos uno al contador y actualizamos banderas
+            BNE     delay               ; 1AFFFFFD ;
+
+            SUBS    R4, R4, #1          ; E2544001 ; Restamos uno al contador del loop1
+            BNE     loop1               ; 1AFFFFF0 ;
+
+            STR     R6, [R0, 0x800]     ; E5806800 ; Sacamos la ultima luz de la primera mitad de la secuencia (0x01)
+            ADD     R4, R0, #7          ; E2804007 ; Reseteamos el contador del loop
+
+            ADD     R3,R0,#0x2          ; E2803002 ; Movemos un 2 al registro R2, contador para el bucle de lectura
+
+lectura:    SUBS    R3,R3,#1            ; E2533001 ; Restamos uno al contador y actualizamos banderas
+            LDR     R1,[R0,#0x800]      ; E5901800 ; Leemos el puerto, guardando en R1 los valores de los switches y del key_1
+            BNE     lectura             ; 1AFFFFFC ;
+
+            ANDS    R1,R1,#0x02         ; E2111002 ; Primer mascara, verificamos que el pin T8 se haya apagado
+            BEQ     inicio              ; 0AFFFF91 ;
+
+loop2:      ADD     R6, R6, R6          ; E0866006 ; Multiplicamos R6 por 2
+            LDR     R9, [R0, #0x4]      ; E5909004 ; Lectura del delay desde tabla, guardamos en el registro R9
+
+delay       SUBS    R9, R9, #1          ; E2599001 ; Restamos uno al contador y actualizamos banderas
+            BNE     delay               ; 1AFFFFFD ;
+
+            STR     R6, [R0, 0x800]     ; E5806800 ; Sacamos la luz al puerto
+            SUBS    R4, R4, #1          ; E2544001 ; Restamos uno al contador del loop2
+            BNE     loop2               ; 1AFFFFF8 ;
+
+            ADD     R3,R0,#0x2          ; E2803002 ; Movemos un 2 al registro R2, contador para el bucle de lectura
+
+lectura:    SUBS    R3,R3,#1            ; E2533001 ; Restamos uno al contador y actualizamos banderas
+            LDR     R1,[R0,#0x800]      ; E5901800 ; Leemos el puerto, guardando en R1 los valores de los switches y del key_1
+            BNE     lectura             ; 1AFFFFFC ;
+
+            ANDS    R1,R1,#0x02         ; E2111002 ; Segunda mascara, verificamos que el pin T8 se haya apagado
+            BEQ     inicio              ; 0AFFFF84 ;
+            BNE     sec2                ; 1AFFFFD7 ; De no haberse apagado el pin T8, se reinicia la secuencia
+
+/----------------------------------------------------------------------------/
+/------------------------------- Secuencia 3 --------------------------------/
+/----------------------------------------------------------------------------/
+
+sec3:       ADD r4, r0, #0x1f           ; E280401F ; Contador de palabras de la tabla
+            ADD r5, r0, #44             ; E2805028 ; Guardamos el valor de la primer palabra de la secuencia
+
+loop1:      LDR r2, [r5]                ; E5952000 ; Lee el dato de la tabla guardado en r2
+            STR r2, [r0, #0x800]        ; E5802800 ; Sacamos la luz al puerto del LED
+            LDR r9, [r0, #4]            ; E5909004 ; Cargamos en el registro el valor de tabla del delay 
+
+delay:      SUBS r9, r9, #1             ; E2599001 ; Resta 1 hasta llegar a cero
+            BNE delay                   ; 1AFFFFFD ;
+
+            ADD r5, r5, #4              ; E2855004 ; Aumentamos en 4 para pasar a la proxima palabra de tabla
+            SUBS r4, r4, #1             ; E2544001 ; Restamos 1 al contador de instrucciones
+            ADDEQ r4,r0,#0x1f           ; 0280401F ; Si llega a cero, suma la cantidad de lineas de la tabla
+            ADDEQ r5,r0,#44             ; 02805028 ; Y vuelve a la primer palabra de la secuencia
+            ADD R3,R0,#0x2              ; E2803002 ; Contador de doble lectura
+
+lectura:    SUBS R3,R3,#1               ; E2533001 ; Lectura del puerto
+            LDR  R1,[R0,#0x800]         ; E5901800 ; 
+            BNE  lectura                ; 1AFFFFFC ;
+
+            ANDS R1,R1,#0x04            ; E2111004 ; Mascara: verifica que se haya apagado el pin_B9
+            BEQ inicio                  ; 0AFFFF72 ;     
+            BNE loop1                   ; 1AFFFFEF ; Si no se apaga el PIN_B9 vuelve a la secuencia
+
+/----------------------------------------------------------------------------/
+/------------------------------- Secuencia 4 --------------------------------/
+/----------------------------------------------------------------------------/
+
+sec4:       ADD     R4, R0, #5          ; E2804005 ; Movemos un 5 al registro R5, contador del loop1
+            ADD     R8, R0, #0          ; E2808000 ; Movemos un 0 al registro R8, contador de luces encendidas
+            ADD     R6, R0, #0x80       ; E2806080 ; Movemos el valor 0x80 al registro R6, sera nuestro registro de luces
+
+loop1:      STR     R6, [R0, #0x800]    ; E5806800 ; Sacamos luz al puerto
+            ADD     R5, R0, #6          ; E2805006 ; Movemos un 6 al registro R5, contador de la division
+            ADD     R7, R0, #1          ; E2807001 ; Movemos un 1 al registro R7, acumulador de la division
+            SUB     R5, R5, R8          ; E0455008 ; Corregimos R5 segun la cantidad de luces que hemos encendido
+
+division:   SUBS    R5, R5, #1          ; E2555001 ; Restamos uno al contador y actualizamos banderas
+            ADD     R7, R7, R7          ; E0877007 ; Acumulamos R7
+            BNE     division            ; 1AFFFFFC ;
+
+            ADD     R8, R8, #1          ; E2888001 ; Sumamos uno a R8, correspondiente a la luz encendida
+            SUB     R6, R6, R7          ; E0466007 ; Division de R6 por 2
+            LDR     R9, [R0, #0x4]      ; E5909004 ; Lectura del delay desde tabla, guardamos en el registro R9
+
+delay       SUBS    R9, R9, #1          ; E2599001 ; Restamos uno al contador y actualizamos banderas
+            BNE     delay               ; 1AFFFFFD ;
+
+            SUBS    R4, R4, #1          ; E2544001 ; Restamos uno al contador del loop y actualizamos banderas
+            BNE     loop1               ; 1AFFFFF1 ;
+
+            ADD     R6, R0, #0x08       ; E2806008 ; Movemos a R6 el valor 0x08, correspondiente al cuarto led menos significativo
+            ADD     R4, R0, #3          ; E2804003 ; Movemos un 3 al registro R4, contador del loop2
+            ADD     R10, R6, R6         ; E086A006 ; Multiplicamos R6 por 2 y lo guardamos en R10
+            ADD     R8, R0, #0          ; E2808000 ; Volvemos R8 a 0, cumplira el mismo proposito
+            ADD     R3,R0,#0x2          ; E2803002 ; Movemos un 2 al registro R3, contador para el bucle de lectura
+
+lectura:    SUBS    R3,R3,#1            ; E2533001 ; Restamos uno al contador y actualizamos banderas
+            LDR     R1,[R0,#0x800]      ; E5901800 ; Leemos el puerto, guardando en R1 los valores de los switches y del key_1
+            BNE     lectura             ; 1AFFFFFC ;
+
+            ANDS    R1,R1,#0x08         ; E2111008 ; Primer mascara, verificamos que el pin_M15 se haya apagado
+            BEQ     inicio              ; 0AFFFF56 ;
+
+loop2:      ADD     R5, R0, #2          ; E2805002 ; Movemos un 2 al registro R5, contador de la division
+            ADD     R7, R0, #1          ; E2807001 ; Movemos un 1 al registro R7, acumulador de la division
+            SUBS    R5, R5, R8          ; E0555008 ; Corregimos R5 segun la cantidad de luces que hayamos encendido
+            BEQ     salto               ; 0A000002 ; En caso de ser 0, debemos evitar el loop division
+
+division:   SUBS    R5, R5, #1          ; E2555001 ; Restamos uno al contador y actualizamos banderas
+            ADD     R7, R7, R7          ; E0877007 ; Acumulamos R7
+            BNE     division            ; 1AFFFFFC ;
+
+            ADD     R8, R8, #1          ; E2888001 ; Sumamos uno a R8, correspondiente a la luz encendida
+            SUB     R6, R6, R7          ; E0466007 ; Division de R6 por 2
+            ORR     R11, R10, R6        ; E18AB006 ; Mediante una OR logica, unimos las 2 señales para formar una sola
+            STR     R11, [R0, 0x800]    ; E580B800 ; Sacamos luz al puerto
+            ADD     R10, R10, R10       ; E08AA00A ; Multiplicamos R10 por 2
+            LDR     R9, [R0, #0x8]      ; E5909004 ; Lectura del delay desde tabla, guardamos en el registro R9
+
+delay       SUBS    R9, R9, #1          ; E2599001 ; Restamos uno al contador y actualizamos banderas
+            BNE     delay               ; 1AFFFFFD ;
+
+            SUBS    R4, R4, #1          ; E2544001 ; Restamos uno al contador del loop
+            BNE     loop2               ; 1AFFFFEE ;
+
+            ADD     R6, R0, #0x00       ; E2806000 ; Movemos un 0 al registro R6, correspondiente a la ultima luz de la secuencia
+            STR     R6, [R0, 0x800]     ; E5806800 ; Sacamos luz al puerto
+
+            LDR     R9, [R0, #0x8]      ; E5909004 ; Lectura del delay desde tabla, guardamos en el registro R9
+
+delay       SUBS    R9, R9, #1          ; E2599001 ; Restamos uno al contador y actualizamos banderas
+            BNE     delay               ; 1AFFFFFD ;
+
+            ADD     R3,R0,#0x2          ; E2803002 ; Movemos un 2 al registro R3, contador para el bucle de lectura
+
+lectura:    SUBS    R3,R3,#1            ; E2533001 ; Restamos uno al contador y actualizamos banderas
+            LDR     R1,[R0,#0x800]      ; E5901800 ; Leemos el puerto, guardando en R1 los valores de los switches y del key_1
+            BNE     lectura             ; 1AFFFFFC ;
+
+            ANDS    R1,R1,#0x08         ; E2111008 ; Segunda mascara, verificamos que el pin_M15 se haya apagado
+            BEQ     inicio              ; 0AFFFF3D ;
+            BNE     sec4                ; 1AFFFFCA ; De no haberse apagado, repetimos la secuencia
+
+/----------------------------------------------------------------------------/
+
+sub r0, pc, pc
+add r2, r0, #0x80
+str r2, [r0, #0x800]
+add r3, r0, #2
+subs r3, r3, #1
+ldr r1, [r0, #0x800]
+bne #0x10
+ands r2, r1, #0xf
+beq #0xc
+andsne r2, r1, #1
+strne r0, [r0, #0x800]
+bne #0x58
+andseq r2, r1, #2
+strne r0, [r0, #0x800]
+bne #0x84
+andseq r2, r1, #4
+strne r0, [r0, #0x800]
+bne #0xb0
+andseq r2, r1, #8
+strne r0, [r0, #0x800]
+bne #0xdc
+b #4
+and r2, r1, #1
+str r2, [r0, #0x800]
+add r3, r0, #2
+subs r3, r3, #1
+ldr r1, [r0, #0x800]
+bne #0x64
+ands r2, r1, #0x10
+beq #0x108
+andsne r2, r1, #1
+beq #4
+bne #0x60
+and r2, r1, #2
+str r2, [r0, #0x800]
+add r3, r0, #2
+subs r3, r3, #1
+ldr r1, [r0, #0x800]
+bne #0x90
+ands r2, r1, #0x10
+beq #0x154
+andsne r2, r1, #2
+beq #4
+bne #0x8c
+and r2, r1, #4
+str r2, [r0, #0x800]
+add r3, r0, #2
+subs r3, r3, #1
+ldr r1, [r0, #0x800]
+bne #0xbc
+ands r2, r1, #0x10
+beq #0x1f4
+andsne r2, r1, #4
+beq #4
+bne #0xb8
+and r2, r1, #8
+str r2, [r0, #0x800]
+add r3, r0, #2
+subs r3, r3, #1
+ldr r1, [r0, #0x800]
+bne #0xe8
+ands r2, r1, #0x10
+beq #0x23c
+andsne r2, r1, #8
+beq #4
+bne #0xe4
+ldr r5, [r0, #4]
+add r7, r0, #16
+add r8, r0, #8
+ldr sb, [r7]
+str sb, [r0, #0x800]
+add r6, r0, r5
+subs r6, r6, #1
+bne #0x120
+add r7, r7, #4
+subs r8, r8, #1
+addeq r7, r0, #16
+addeq r8, r8, #8
+add r3, r0, #2
+subs r3, r3, #1
+ldr r1, [r0, #0x800]
+bne #0x13c
+ands r1, r1, #1
+beq #4
+bne #0x114
+add r4, r0, #7
+add r8, r0, #0
+add r6, r0, #0x80
+str r6, [r0, #0x800]
+add r5, r0, #6
+add r7, r0, #1
+subs r5, r5, r8
+beq #0x180
+subs r5, r5, #1
+add r7, r7, r7
+bne #0x174
+add r8, r8, #1
+sub r6, r6, r7
+ldr sb, [r0, #12]
+subs sb, sb, #1
+bne #0x18c
+subs r4, r4, #1
+bne #0x160
+str r6, [r0, #0x800]
+add r4, r0, #7
+add r3, r0, #2
+subs r3, r3, #1
+ldr r1, [r0, #0x800]
+bne #0x1a8
+ands r1, r1, #2
+beq #4
+add r6, r6, r6
+ldr sb, [r0, #12]
+subs sb, sb, #1
+bne #0x1c4
+str r6, [r0, #0x800]
+subs r4, r4, #1
+bne #0x1bc
+add r3, r0, #2
+subs r3, r3, #1
+ldr r1, [r0, #0x800]
+bne #0x1dc
+ands r1, r1, #2
+beq #0x04
+bne #0x154
+add r4, r0, #0x1f
+add r5, r0, #0x30
+ldr r2, [r5]
+str r2, [r0, #0x800]
+ldr sb, [r0, #4]
+subs sb, sb, #1
+bne #0x208
+add r5, r5, #4
+subs r4, r4, #1
+addeq r4, r0, #0x1f
+addeq r5, r0, #0x30
+add r3, r0, #2
+subs r3, r3, #1
+ldr r1, [r0, #0x800]
+bne #0x224
+ands r1, r1, #4
+beq #4
+bne #0x1fc
+add r4, r0, #5
+add r8, r0, #0
+add r6, r0, #0x80
+str r6, [r0, #0x800]
+add r5, r0, #6
+add r7, r0, #1
+sub r5, r5, r8
+subs r5, r5, #1
+add r7, r7, r7
+bne #0x258
+add r8, r8, #1
+sub r6, r6, r7
+ldr sb, [r0, #4]
+subs sb, sb, #1
+bne #0x270
+subs r4, r4, #1
+bne #0x248
+add r6, r0, #8
+add r4, r0, #3
+add sl, r6, r6
+add r8, r0, #0
+add r3, r0, #2
+subs r3, r3, #1
+ldr r1, [r0, #0x800]
+bne #0x294
+ands r1, r1, #8
+beq #4
+add r5, r0, #2
+add r7, r0, #1
+subs r5, r5, r8
+beq #0x2c4
+subs r5, r5, #1
+add r7, r7, r7
+bne #0x2b8
+add r8, r8, #1
+sub r6, r6, r7
+orr fp, sl, r6
+str fp, [r0, #0x800]
+add sl, sl, sl
+ldr sb, [r0, #8]
+subs sb, sb, #1
+bne #0x2dc
+subs r4, r4, #1
+bne #0x2a8
+add r6, r0, #0
+str r6, [r0, #0x800]
+ldr sb, [r0, #8]
+subs sb, sb, #1
+bne #0x2f8
+add r3, r0, #2
+subs r3, r3, #1
+ldr r1, [r0, #0x800]
+bne #0x304
+ands r1, r1, #8
+beq #4
+bne #0x23c

@@ -1,162 +1,147 @@
-10000000
-01000000
-00100000
-00010000
-00001000
-00010100
-00100010
-01000001
-00000000
+// Secuencia "Fuego Artificial" desarrollada por algoritmo
 
-SUB R0, R15, R15
-Inicio:
-ADD R4, R0, #5 // contador total 
-ADD R8, R0, #0 // disminuir luz  
-ADD R6, R0, #0x80 // primer luz
 
-// Ascenso 
+10000000 --> * - - - - - - -
+01000000 --> - * - - - - - -
+00100000 --> - - * - - - - -
+00010000 --> - - - * - - - -
+00001000 --> - - - - * - - -
+00010100 --> - - - * - * - -
+00100010 --> - - * - - - * -
+01000001 --> - * - - - - - *
+00000000 --> - - - - - - - -
 
-Loop 1:
-STR R6, [R0, #0x800]
-ADD R5, R0, #6 // contador de división
-ADD R7, R0, #1
-SUB R5, R5, R8
-Loop 2:
-SUBS R5, R5, #1
-ADD R7, R7, R7
-BNE Loop 2
-ADD R8, R8, #1
-SUB R6, R6, R7
-ADD R9, R9, #3
-delay
-SUBS R9, R9, #1
-BNE delay
-SUBS R4, R4, #1
-BNE Loop 1
+/---------------------------------------------------------------------------------/
+/------------------------------- Fuego Artificial --------------------------------/
+/---------------------------------------------------------------------------------/
 
-// Explosión
+sec4:       ADD     R4, R0, #5          ; E2804005 ; Movemos un 5 al registro R5, contador del loop1
+            ADD     R8, R0, #0          ; E2808000 ; Movemos un 0 al registro R8, contador de luces encendidas
+            ADD     R6, R0, #0x80       ; E2806080 ; Movemos el valor 0x80 al registro R6, sera nuestro registro de luces
 
-ADD R6, R0, #0x08
-ADD R4, R0, #3
-ADD R10, R6, R6
-ADD R8, R0, #0
+loop1:      STR     R6, [R0, #0x800]    ; E5806800 ; Sacamos luz al puerto
+            ADD     R5, R0, #6          ; E2805006 ; Movemos un 6 al registro R5, contador de la division
+            ADD     R7, R0, #1          ; E2807001 ; Movemos un 1 al registro R7, acumulador de la division
+            SUB     R5, R5, R8          ; E0455008 ; Corregimos R5 segun la cantidad de luces que hemos encendido
 
-Loop 3:
+division:   SUBS    R5, R5, #1          ; E2555001 ; Restamos uno al contador y actualizamos banderas
+            ADD     R7, R7, R7          ; E0877007 ; Acumulamos R7
+            BNE     division            ; 1AFFFFFC ;
 
-ADD R5, R0, #2 // contador de división 
-ADD R7, R0, #1
-SUB R5, R5, R8
-BEQ ADD R8
-Loop 4:
-SUBS R5, R5, #1
-ADD R7, R7, R7
-BNE Loop 4
-ADD R8, R8, #1
-SUB R6, R6, R7
-ORR R11, R10, R6
-STR R11, [R0, 0x800]
-ADD R10, R10, R10
-ADD R9, R9, #2
-delay
-SUBS R9, R9, #1
-BNE delay
-SUBS R4, R4, #1
-BNE Loop 3
-ADD R6, R0, #0x00
-STR R6, [R0, 0x800]
+            ADD     R8, R8, #1          ; E2888001 ; Sumamos uno a R8, correspondiente a la luz encendida
+            SUB     R6, R6, R7          ; E0466007 ; Division de R6 por 2
+            LDR     R9, [R0, #0x4]      ; E5909004 ; Lectura del delay desde tabla, guardamos en el registro R9
 
-B inicio
+delay       SUBS    R9, R9, #1          ; E2599001 ; Restamos uno al contador y actualizamos banderas
+            BNE     delay               ; 1AFFFFFD ;
 
-////////////////////////////////////////////////////////
+            SUBS    R4, R4, #1          ; E2544001 ; Restamos uno al contador del loop y actualizamos banderas
+            BNE     loop1               ; 1AFFFFF1 ;
 
-SUB R0, R15, R15
-ADD R4, R0, #5 
-ADD R9, R0, #7 
-ADD R8, R0, #0 
-ADD R6, R0, #0x80 
-STR R6, [R0, #0x800]
-ADD R5, R0, #6
-ADD R7, R0, #1
-SUB R5, R5, R8
-SUBS R5, R5, #1
-ADD R7, R7, R7
-BNE 0x24
-ADD R8, R8, #1
-SUB R9, R9, #1
-SUB R6, R6, R7
-ADD R9, R9, #3
-SUBS R9, R9, #1
-BNE 0x40
-SUBS R4, R4, #1
-BNE 0x14
-ADD R6, R0, #0x08
-ADD R4, R0, #3
-ADD R10, R6, R6
-ADD R8, R0, #0
-ADD R5, R0, #2 
-ADD R7, R0, #1
-SUBS R5, R5, R8
-BEQ 0x7C
-SUBS R5, R5, #1
-ADD R7, R7, R7
-BNE 0x70
-ADD R8, R8, #1
-SUB R6, R6, R7
-ORR R11, R10, R6
-STR R11, [R0, 0x800]
-ADD R10, R10, R10
-ADD R9, R9, #2
-SUBS R9, R9, #1
-BNE 0x94
-SUBS R4, R4, #1
-BNE 0x60
-ADD R6, R0, #0x00
-STR R6, [R0, 0x800]
-B 0x4
+            ADD     R6, R0, #0x08       ; E2806008 ; Movemos a R6 el valor 0x08, correspondiente al cuarto led menos significativo
+            ADD     R4, R0, #3          ; E2804003 ; Movemos un 3 al registro R4, contador del loop2
+            ADD     R10, R6, R6         ; E086A006 ; Multiplicamos R6 por 2 y lo guardamos en R10
+            ADD     R8, R0, #0          ; E2808000 ; Volvemos R8 a 0, cumplira el mismo proposito
+            ADD     R3,R0,#0x2          ; E2803002 ; Movemos un 2 al registro R3, contador para el bucle de lectura
+
+lectura:    SUBS    R3,R3,#1            ; E2533001 ; Restamos uno al contador y actualizamos banderas
+            LDR     R1,[R0,#0x800]      ; E5901800 ; Leemos el puerto, guardando en R1 los valores de los switches y del key_1
+            BNE     lectura             ; 1AFFFFFC ;
+
+            ANDS    R1,R1,#0x08         ; E2111008 ; Primer mascara, verificamos que el pin_M15 se haya apagado
+            BEQ     inicio              ; 0AFFFF56 ;
+
+loop2:      ADD     R5, R0, #2          ; E2805002 ; Movemos un 2 al registro R5, contador de la division
+            ADD     R7, R0, #1          ; E2807001 ; Movemos un 1 al registro R7, acumulador de la division
+            SUBS    R5, R5, R8          ; E0555008 ; Corregimos R5 segun la cantidad de luces que hayamos encendido
+            BEQ     salto               ; 0A000002 ; En caso de ser 0, debemos evitar el loop division
+
+division:   SUBS    R5, R5, #1          ; E2555001 ; Restamos uno al contador y actualizamos banderas
+            ADD     R7, R7, R7          ; E0877007 ; Acumulamos R7
+            BNE     division            ; 1AFFFFFC ;
+
+            ADD     R8, R8, #1          ; E2888001 ; Sumamos uno a R8, correspondiente a la luz encendida
+            SUB     R6, R6, R7          ; E0466007 ; Division de R6 por 2
+            ORR     R11, R10, R6        ; E18AB006 ; Mediante una OR logica, unimos las 2 señales para formar una sola
+            STR     R11, [R0, 0x800]    ; E580B800 ; Sacamos luz al puerto
+            ADD     R10, R10, R10       ; E08AA00A ; Multiplicamos R10 por 2
+            LDR     R9, [R0, #0x8]      ; E5909004 ; Lectura del delay desde tabla, guardamos en el registro R9
+
+delay       SUBS    R9, R9, #1          ; E2599001 ; Restamos uno al contador y actualizamos banderas
+            BNE     delay               ; 1AFFFFFD ;
+
+            SUBS    R4, R4, #1          ; E2544001 ; Restamos uno al contador del loop
+            BNE     loop2               ; 1AFFFFEE ;
+
+            ADD     R6, R0, #0x00       ; E2806000 ; Movemos un 0 al registro R6, correspondiente a la ultima luz de la secuencia
+            STR     R6, [R0, 0x800]     ; E5806800 ; Sacamos luz al puerto
+
+            LDR     R9, [R0, #0x8]      ; E5909004 ; Lectura del delay desde tabla, guardamos en el registro R9
+
+delay       SUBS    R9, R9, #1          ; E2599001 ; Restamos uno al contador y actualizamos banderas
+            BNE     delay               ; 1AFFFFFD ;
+
+            ADD     R3,R0,#0x2          ; E2803002 ; Movemos un 2 al registro R3, contador para el bucle de lectura
+
+lectura:    SUBS    R3,R3,#1            ; E2533001 ; Restamos uno al contador y actualizamos banderas
+            LDR     R1,[R0,#0x800]      ; E5901800 ; Leemos el puerto, guardando en R1 los valores de los switches y del key_1
+            BNE     lectura             ; 1AFFFFFC ;
+
+            ANDS    R1,R1,#0x08         ; E2111008 ; Segunda mascara, verificamos que el pin_M15 se haya apagado
+            BEQ     inicio              ; 0AFFFF3D ;
+            BNE     sec4                ; 1AFFFFCA ; De no haberse apagado, repetimos la secuencia
+
 
 ////////////////////////////////////////////////////////
 
-E04F000F
-E2804005
-E2809007
-E2808000
-E2806080
-E5806800
-E2805006
-E2807001
-E0455008
-E2555001
-E0877007
-1AFFFFFC
-E2888001
-E2499001
-E0466007
-E2899003
-E2599001
-1AFFFFFD
-E2544001
-1AFFFFF0
-E2806008
-E2804003
-E086A006
-E2808000
-E2805002
-E2807001
-E0555008
-0A000002
-E2555001
-E0877007
-1AFFFFFC
-E2888001
-E0466007
-E18AB006
-E580B800
-E08AA00A
-E2899002
-E2599001
-1AFFFFFD
-E2544001
-1AFFFFEE
-E2806000
-E5806800
-EAFFFFD4
+ADD     R4, R0, #5  
+ADD     R8, R0, #0 
+ADD     R6, R0, #0x80 
+STR     R6, [R0, #0x800]
+ADD     R5, R0, #6
+ADD     R7, R0, #1
+SUB     R5, R5, R8
+SUBS    R5, R5, #1
+ADD     R7, R7, R7
+BNE     #0x258
+ADD     R8, R8, #1
+SUB     R6, R6, R7
+LDR     R9, [R0, #4]
+SUBS    R9, R9, #1
+BNE     #0x270
+SUBS    R4, R4, #1
+BNE     #0x248
+ADD     R6, R0, #0x08
+ADD     R4, R0, #3
+ADD     R10, R6, R6
+ADD     R8, R0, #0
+ADD     R5, R0, #2 
+ADD     R7, R0, #1
+SUBS    R5, R5, R8
+BEQ     #0x2c4
+SUBS    R5, R5, #1
+ADD     R7, R7, R7
+BNE     #0x2b8
+ADD     R8, R8, #1
+SUB     R6, R6, R7
+ORR     R11, R10, R6
+STR     R11, [R0, 0x800]
+ADD     R10, R10, R10
+LDR     R9, [R0, #8]
+SUBS    R9, R9, #1
+BNE     #0x2dc
+SUBS    R4, R4, #1
+BNE     #0x2a8
+ADD     R6, R0, #0x00
+STR     R6, [R0, 0x800]
+LDR     R9, [R0, #8]
+SUBS    R9, R9, #1
+BNE     #0x2f8
+ADD     R3, R0, #2
+SUBS    R3, R3, #1
+LDR     R1, [R0, #0x800]
+BNE     #0x304
+ANDS    R1, R1, #8
+BEQ     #0x04
+BNE     #0x23c
+

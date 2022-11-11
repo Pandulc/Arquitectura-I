@@ -1,129 +1,107 @@
-10000000
-01000000
-00100000
-00010000
-00001000
-00000100
-00000010
-00000001
-00000010
-00000100
-00001000
-00010000
-00100000
-01000000
-10000000
+// Secuencia "Auto Fantastico" desarrollada por algoritmo
 
-SUB R0, R15, R15
-Inicio:
-ADD R4, R0, #8 // contador total 
-ADD R8, R0, #0 // disminuir luz  
-ADD R6, R0, #0x80 // primer luz
+00000080 --> * - - - - - - -    00000002 --> - - - - - - * -   
+00000040 --> - * - - - - - -    00000004 --> - - - - - * - - 
+00000020 --> - - * - - - - -    00000008 --> - - - - * - - -
+00000010 --> - - - * - - - -    00000010 --> - - - * - - - -
+00000008 --> - - - - * - - -    00000020 --> - - * - - - - -     
+00000004 --> - - - - - * - -    00000040 --> - * - - - - - -
+00000002 --> - - - - - - * -    00000080 --> * - - - - - - -
+00000001 --> - - - - - - - *
 
-// Ascenso 
+/--------------------------------------------------------------------------------/
+/------------------------------- Auto Fantastico --------------------------------/
+/--------------------------------------------------------------------------------/
 
-Loop 1:
-STR R6, [R0, #0x800]
-ADD R5, R0, #6 // contador de división
-ADD R7, R0, #1
-SUBS R5, R5, R8
-BEQ 
-Loop 2:
-SUBS R5, R5, #1
-ADD R7, R7, R7
-BNE Loop 2
-ADD R8, R8, #1
-SUB R6, R6, R7
-SUBS R4, R4, #1
-ADD R9, R0, #2
-delay:
-SUBS R9, R9, #1
-BNE delay
-BNE Loop 1
-STR R6, [R0, 0x800]
+sec2:       ADD     R4, R0, #7          ; E2804007 ; Movemos un 7 al registro R4, contador del loop1
+            ADD     R8, R0, #0          ; E2808000 ; Movemos un 0 al registro R8, contador de luces encendidas
+            ADD     R6, R0, #0x80       ; E2806080 ; Movemos el valor 0x80 al registro R6, este sera nuestro registro de luces
 
-loop 2
-ADD R6, R6, R6
-ADD R9, R0, #10
-delay:
-SUBS R9, R9, #1
-BNE delay
+loop1:      STR     R6, [R0, #0x800]    ; E5806800 ; Sacamos la luz de la secuencia al puerto
+            ADD     R5, R0, #6          ; E2805006 ; Movemos un 6 al registro R5, contador de la division
+            ADD     R7, R0, #1          ; E2807001 ; Movemos un 1 al registro R7, acumulador para division
+            SUBS    R5, R5, R8          ; E0555008 ; Corregimos R5 segun la cantidad de luces que hayamos encendido y actualiza banderas
+            BEQ     salto               ; 0A000002 ; En caso de ser 0, debemos evitar el loop division
 
-STR R6, [R0, 0x800]
-ADD R4, R0, #7
+division:   SUBS    R5, R5, #1          ; E2555001 ; Restamos uno al contador y actualizamos banderas
+            ADD     R7, R7, R7          ; E0877007 ; Acumulamos R7
+            BNE     division            ; 1AFFFFFC ;
 
-loop 2
-ADD R6, R6, R6
-ADD R9, R0, #10
-delay:
-SUBS R9, R9, #1
-BNE delay
-STR R6, [R0, 0x800]
-SUBS R4, R4, #1
-BNE loop 2
+salto:      ADD     R8, R8, #1          ; E2888001 ; Sumamos 1 al registro R8, correspondiente a la luz que sacamos
+            SUB     R6, R6, R7          ; E0466007 ; Division por 2 de R6
+            LDR     R9, [R0, #0x4]      ; E5909004 ; Lectura del delay desde tabla, guardamos en el registro R9
 
-B 0x0
+delay       SUBS    R9, R9, #1          ; E2599001 ; Restamos uno al contador y actualizamos banderas
+            BNE     delay               ; 1AFFFFFD ;
 
-/////////////////////////////////////////////////////
+            SUBS    R4, R4, #1          ; E2544001 ; Restamos uno al contador del loop1
+            BNE     loop1               ; 1AFFFFF0 ;
 
-SUB R0, R15, R15
-ADD R4, R0, #7
-ADD R8, R0, #0 
-ADD R6, R0, #0x80
-STR R6, [R0, #0x800]
-ADD R5, R0, #6 
-ADD R7, R0, #1
-SUBS R5, R5, R8
-BEQ 0x30
-SUBS R5, R5, #1
-ADD R7, R7, R7
-BNE 0x24
-ADD R8, R8, #1
-SUB R6, R6, R7
-ADD R9, R0, #2
-SUBS R9, R9, #1
-BNE 0x3C
-SUBS R4, R4, #1
-BNE 0x10
-STR R6, [R0, 0x800]
-ADD R4, R0, #7
-ADD R6, R6, R6
-ADD R9, R0, #10
-SUBS R9, R9, #1
-BNE 0x5C
-STR R6, [R0, 0x800]
-SUBS R4, R4, #1
-BNE 0x54
-B 0x0
+            STR     R6, [R0, 0x800]     ; E5806800 ; Sacamos la ultima luz de la primera mitad de la secuencia (0x01)
+            ADD     R4, R0, #7          ; E2804007 ; Reseteamos el contador del loop
 
-/////////////////////////////////////////////////////
+            ADD     R3,R0,#0x2          ; E2803002 ; Movemos un 2 al registro R2, contador para el bucle de lectura
 
-E04F000F
-E2804007
-E2808000
-E2806080
-E5806800
-E2805006
-E2807001
-E0555008
-0A000002
-E2555001
-E0877007
-1AFFFFFC
-E2888001
-E0466007
-E2809002
-E2599001
-1AFFFFFD
-E2544001
-1AFFFFF0
-E5806800
-E2804007
-E0866006
-E280900A
-E2599001
-1AFFFFFD
-E5806800
-E2544001
-1AFFFFF8
-EAFFFFE2
+lectura:    SUBS    R3,R3,#1            ; E2533001 ; Restamos uno al contador y actualizamos banderas
+            LDR     R1,[R0,#0x800]      ; E5901800 ; Leemos el puerto, guardando en R1 los valores de los switches y del key_1
+            BNE     lectura             ; 1AFFFFFC ;
+
+            ANDS    R1,R1,#0x02         ; E2111002 ; Primer mascara, verificamos que el pin T8 se haya apagado
+            BEQ     inicio              ; 0AFFFF91 ;
+
+loop2:      ADD     R6, R6, R6          ; E0866006 ; Multiplicamos R6 por 2
+            LDR     R9, [R0, #0x4]      ; E5909004 ; Lectura del delay desde tabla, guardamos en el registro R9
+
+delay       SUBS    R9, R9, #1          ; E2599001 ; Restamos uno al contador y actualizamos banderas
+            BNE     delay               ; 1AFFFFFD ;
+
+            STR     R6, [R0, 0x800]     ; E5806800 ; Sacamos la luz al puerto
+            SUBS    R4, R4, #1          ; E2544001 ; Restamos uno al contador del loop2
+            BNE     loop2               ; 1AFFFFF8 ;
+
+            ADD     R3,R0,#0x2          ; E2803002 ; Movemos un 2 al registro R2, contador para el bucle de lectura
+
+lectura:    SUBS    R3,R3,#1            ; E2533001 ; Restamos uno al contador y actualizamos banderas
+            LDR     R1,[R0,#0x800]      ; E5901800 ; Leemos el puerto, guardando en R1 los valores de los switches y del key_1
+            BNE     lectura             ; 1AFFFFFC ;
+
+            ANDS    R1,R1,#0x02         ; E2111002 ; Segunda mascara, verificamos que el pin T8 se haya apagado
+            BEQ     inicio              ; 0AFFFF84 ;
+            BNE     sec2                ; 1AFFFFD7 ; De no haberse apagado el pin T8, se reinicia la secuencia
+
+/--------------------------------------------------------------------------------/
+
+ADD     R4, R0, #7
+ADD     R8, R0, #0
+ADD     R6, R0, #0x80 
+STR     R6, [R0, #0x800]
+ADD     R5, R0, #6
+ADD     R7, R0, #1
+SUBS    R5, R5, R8
+BEQ     #0x180
+SUBS    R5, R5, #1
+ADD     R7, R7, R7
+BNE     #0x174
+ADD     R8, R8, #1
+SUB     R6, R6, R7
+LDR     R9, [R0, #12]
+SUBS    R9, R9, #1
+BNE     #0x18c
+SUBS    R4, R4, #1
+BNE     #0x160
+STR     R6, [R0, 0x800]
+ADD     R4, R0, #7
+ADD     R6, R6, R6
+LDR     R9, [R0, #12]
+SUBS    R9, R9, #1
+BNE     #0x1c4
+STR     R6, [R0, 0x800]
+SUBS    R4, R4, #1
+BNE     #0x1bc
+ADD     R3, R0, #2
+SUBS    R3, R3, #1
+LDR     R1, [R0, #0x800]
+BNE     #0x1dc
+ANDS    R1, R1, #2
+BEQ     #0x04
+bne     #0x154
