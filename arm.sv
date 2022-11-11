@@ -33,7 +33,7 @@ module dmem(input  logic        clk, we,
   logic [31:0] RAM[63:0];
   
   initial
-      $readmemh("E:\\Desktop\\Arquitectura-I-main\\dmem.dat",RAM);
+      $readmemh("E:\\Desktop\\Arquitectura-I\\dmem.dat",RAM);
 
   assign rd = RAM[a[31:2]]; // word aligned
 
@@ -47,7 +47,7 @@ module imem(input  logic [31:0] a,
   logic [31:0] RAM[255:0];
 
   initial
-      $readmemh("E:\\Desktop\\Arquitectura-I-main\\imem.dat",RAM);
+      $readmemh("E:\\Desktop\\Arquitectura-I\\imem.dat",RAM);
 
   assign rd = RAM[a[31:2]]; // word aligned
 endmodule
